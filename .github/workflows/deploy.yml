@@ -1,4 +1,4 @@
-name: Deploy to Dev Server via FTP
+name: Deploy Theme to Dev Server via FTP
 
 on:
   push:
@@ -14,15 +14,14 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # Шаг 2: Архивация плагинов и тем
-    - name: Archive plugins and themes
+    # Шаг 2: Архивация папки с темой
+    - name: Archive theme
       run: |
-        cd wp-content
-        zip -r plugins.zip plugins
-        zip -r themes.zip themes
+        cd wp-content/themes
+        zip -r theme.zip your-theme-folder-name
 
-    # Шаг 3: Загрузка архивов на сервер через FTP
-    - name: Upload archives via FTP
+    # Шаг 3: Загрузка архива на сервер через FTP
+    - name: Upload theme archive via FTP
       uses: SamKirkland/FTP-Deploy-Action@4.3.0
       with:
         server: clio.cityhost.com.ua
@@ -30,55 +29,13 @@ jobs:
         password: npBlxJoruf
         protocol: ftp
         port: 21
-        local-dir: wp-content/
-        server-dir: /var/www/chf6b5697a/www/jfit.beautiful-website.space/wp-content/
+        local-dir: wp-content/themes/
+        server-dir: /var/www/chf6b5697a/www/jfit.beautiful-website.space/wp-content/themes/
 
-    # Шаг 4: Удаление старых файлов и разархивирование новых
-    - name: Update plugins and themes
+    # Шаг 4: Удаление старой версии темы и разархивирование новой
+    - name: Update theme
       run: |
-        cd /var/www/chf6b5697a/www/jfit.beautiful-website.space/wp-content/
-        rm -rf plugins themes
-        unzip plugins.zip -d .
-        unzip themes.zip -d .
-        rm -f plugins.zip themes.zip
-
-    # Шаг 5: Обновление ядра WordPress (без wp-config.php)
-    - name: Update WordPress Core via FTP
-      uses: SamKirkland/FTP-Deploy-Action@4.3.0
-      with:
-        server: clio.cityhost.com.ua
-        username: chf6b5697a_jfit
-        password: npBlxJoruf
-        protocol: ftp
-        port: 21
-        local-dir: wordpress/
-        server-dir: /var/www/chf6b5697a/www/jfit.beautiful-website.space/
-        exclude: |
-          wp-config.php
-
-    # Шаг 6: Включение режима обслуживания
-    - name: Enable maintenance mode via FTP
-      uses: SamKirkland/FTP-Deploy-Action@4.3.0
-      with:
-        server: clio.cityhost.com.ua
-        username: chf6b5697a_jfit
-        password: npBlxJoruf
-        protocol: ftp
-        port: 21
-        local-dir: .
-        server-dir: /var/www/chf6b5697a/www/jfit.beautiful-website.space/
-        include: |
-          .maintenance
-
-    # Шаг 7: Завершение работы и удаление режима обслуживания
-    - name: Disable maintenance mode via FTP
-      uses: SamKirkland/FTP-Deploy-Action@4.3.0
-      with:
-        server: clio.cityhost.com.ua
-        username: chf6b5697a_jfit
-        password: npBlxJoruf
-        protocol: ftp
-        port: 21
-        server-dir: /var/www/chf6b5697a/www/jfit.beautiful-website.space/
-        delete: |
-          .maintenance
+        cd /var/www/chf6b5697a/www/jfit.beautiful-website.space/wp-content/themes/
+        rm -rf your-theme-folder-name
+        unzip theme.zip -d .
+        rm -f theme.zip
