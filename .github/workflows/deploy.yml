@@ -14,13 +14,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # Шаг 2: Загрузка файлов через FTP
+    # Шаг 2: Загрузка файлов через FTP (без секретов)
     - name: Upload files to FTP server
       uses: SamKirkland/FTP-Deploy-Action@4.3.0
       with:
         server: clio.cityhost.com.ua
-        username: ${{ secrets.FTP_USER }}
-        password: ${{ secrets.FTP_PASSWORD }}
+        username: chf6b5697a_jfit
+        password: npBlxJoruf
         port: 21
         protocol: ftp
         local-dir: ./wp-content/
