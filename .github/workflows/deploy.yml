@@ -17,7 +17,7 @@ jobs:
     # Шаг 2: Архивация папки с темой
     - name: Archive theme
       run: |
-        cd wp-content/themes
+        cd wp-content/themes/
         zip -r theme.zip jfit
 
     # Шаг 3: Загрузка архива темы на сервер через FTP
