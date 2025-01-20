@@ -1,4 +1,4 @@
-name: Deploy Theme to Dev Server via FTP
+name: Deploy Theme and Update WordPress via FTP
 
 on:
   push:
@@ -18,9 +18,9 @@ jobs:
     - name: Archive theme
       run: |
         cd wp-content/themes
-        zip -r theme.zip your-theme-folder-name
+        zip -r theme.zip jfit
 
-    # Шаг 3: Загрузка архива на сервер через FTP
+    # Шаг 3: Загрузка архива темы на сервер через FTP
     - name: Upload theme archive via FTP
       uses: SamKirkland/FTP-Deploy-Action@4.3.0
       with:
@@ -36,6 +36,47 @@ jobs:
     - name: Update theme
       run: |
         cd /var/www/chf6b5697a/www/jfit.beautiful-website.space/wp-content/themes/
-        rm -rf your-theme-folder-name
+        rm -rf jfit
         unzip theme.zip -d .
         rm -f theme.zip
+
+    # Шаг 5: Обновление ядра WordPress (без wp-config.php)
+    - name: Update WordPress Core via FTP
+      uses: SamKirkland/FTP-Deploy-Action@4.3.0
+      with:
+        server: clio.cityhost.com.ua
+        username: chf6b5697a_jfit
+        password: npBlxJoruf
+        protocol: ftp
+        port: 21
+        local-dir: wordpress/
+        server-dir: /var/www/chf6b5697a/www/jfit.beautiful-website.space/
+        exclude: |
+          wp-config.php
+
+    # Шаг 6: Включение режима обслуживания
+    - name: Enable maintenance mode via FTP
+      uses: SamKirkland/FTP-Deploy-Action@4.3.0
+      with:
+        server: clio.cityhost.com.ua
+        username: chf6b5697a_jfit
+        password: npBlxJoruf
+        protocol: ftp
+        port: 21
+        local-dir: .
+        server-dir: /var/www/chf6b5697a/www/jfit.beautiful-website.space/
+        include: |
+          .maintenance
+
+    # Шаг 7: Завершение работы и удаление режима обслуживания
+    - name: Disable maintenance mode via FTP
+      uses: SamKirkland/FTP-Deploy-Action@4.3.0
+      with:
+        server: clio.cityhost.com.ua
+        username: chf6b5697a_jfit
+        password: npBlxJoruf
+        protocol: ftp
+        port: 21
+        server-dir: /var/www/chf6b5697a/www/jfit.beautiful-website.space/
+        delete: |
+          .maintenance
