@@ -1,4 +1,4 @@
-name: Deploy to Dev Server
+name: Deploy to Dev Server via FTP
 
 on:
   push:
@@ -21,68 +21,60 @@ jobs:
         zip -r plugins.zip plugins
         zip -r themes.zip themes
 
-    # Шаг 3: Копирование архивов на сервер
-    - name: Copy archives to server
-      uses: appleboy/scp-action@master
+    # Шаг 3: Загрузка архивов на сервер через FTP
+    - name: Upload archives via FTP
+      uses: SamKirkland/FTP-Deploy-Action@4.3.0
       with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        password: ${{ secrets.SSH_PASSWORD }}
-        port: ${{ secrets.SSH_PORT }}
-        source: wp-content/plugins.zip, wp-content/themes.zip
-        target: "/var/www/chf6b5697a/www/jfit.beautiful-website.space"
+        server: ${{ secrets.FTP_HOST }}
+        username: ${{ secrets.FTP_USER }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: wp-content/
+        server-dir: /www/jfit.beautiful-website.space/wp-content/
 
     # Шаг 4: Удаление старых файлов и разархивирование новых
     - name: Update plugins and themes
-      uses: appleboy/ssh-action@v1.0.3
+      uses: SamKirkland/FTP-Deploy-Action@4.3.0
       with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        password: ${{ secrets.SSH_PASSWORD }}
-        port: ${{ secrets.SSH_PORT }}
-        script: |
-          cd /var/www/chf6b5697a/www/jfit.beautiful-website.space
-          rm -rf plugins themes
-          unzip plugins.zip -d .
-          unzip themes.zip -d .
-          rm -f plugins.zip themes.zip
+        server: ${{ secrets.FTP_HOST }}
+        username: ${{ secrets.FTP_USER }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: wp-content/
+        server-dir: /www/jfit.beautiful-website.space/wp-content/
+        exclude: |
+          *.zip
+        extra-args: --delete
 
-    # Шаг 5: Обновление ядра WordPress без wp-config.php
-    - name: Update WordPress Core
-      uses: appleboy/ssh-action@v1.0.3
+    # Шаг 5: Обновление ядра WordPress (без wp-config.php)
+    - name: Update WordPress Core via FTP
+      uses: SamKirkland/FTP-Deploy-Action@4.3.0
       with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        password: ${{ secrets.SSH_PASSWORD }}
-        port: ${{ secrets.SSH_PORT }}
-        script: |
-          cd /www/jfit.beautiful-website.space/
-          find . -type f -name "*.php" ! -name "wp-config.php" -delete
-          rm -rf wp-admin wp-includes
-          wget -O wordpress.zip ${{ secrets.WP_LINK }}
-          unzip -o wordpress.zip -d .
-          mv wordpress/* .
-          rm -rf wordpress wordpress.zip
+        server: ${{ secrets.FTP_HOST }}
+        username: ${{ secrets.FTP_USER }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: wordpress/
+        server-dir: /www/jfit.beautiful-website.space/
+        exclude: |
+          wp-config.php
 
     # Шаг 6: Включение режима обслуживания
-    - name: Enable maintenance mode
-      uses: appleboy/scp-action@master
+    - name: Enable maintenance mode via FTP
+      uses: SamKirkland/FTP-Deploy-Action@4.3.0
       with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        password: ${{ secrets.SSH_PASSWORD }}
-        port: ${{ secrets.SSH_PORT }}
-        source: .maintenance
-        target: "/www/jfit.beautiful-website.space/"
+        server: ${{ secrets.FTP_HOST }}
+        username: ${{ secrets.FTP_USER }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: .
+        server-dir: /www/jfit.beautiful-website.space/
+        include: |
+          .maintenance
 
     # Шаг 7: Завершение работы и удаление режима обслуживания
-    - name: Disable maintenance mode and cleanup
-      uses: appleboy/ssh-action@v1.0.3
+    - name: Disable maintenance mode via FTP
+      uses: SamKirkland/FTP-Deploy-Action@4.3.0
       with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        password: ${{ secrets.SSH_PASSWORD }}
-        port: ${{ secrets.SSH_PORT }}
-        script: |
-          cd /www/jfit.beautiful-website.space/
-          rm -f .maintenance
+        server: ${{ secrets.FTP_HOST }}
+        username: ${{ secrets.FTP_USER }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        server-dir: /www/jfit.beautiful-website.space/
+        delete: |
+          .maintenance
