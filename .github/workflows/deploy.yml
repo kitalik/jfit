@@ -14,67 +14,19 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # Шаг 2: Архивация плагинов и тем
-    - name: Archive plugins and themes
-      run: |
-        cd wp-content
-        zip -r plugins.zip plugins
-        zip -r themes.zip themes
-
-    # Шаг 3: Загрузка архивов на сервер через FTP
-    - name: Upload archives via FTP
+    # Шаг 2: Загрузка файлов через FTP
+    - name: Upload files to FTP server
       uses: SamKirkland/FTP-Deploy-Action@4.3.0
       with:
-        server: ${{ secrets.FTP_HOST }}
+        server: clio.cityhost.com.ua
         username: ${{ secrets.FTP_USER }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: wp-content/
-        server-dir: /var/www/chf6b5697a/www/jfit.beautiful-website.space/wp-content/
-
-    # Шаг 4: Удаление старых файлов и разархивирование новых
-    - name: Update plugins and themes
-      uses: SamKirkland/FTP-Deploy-Action@4.3.0
-      with:
-        server: ${{ secrets.FTP_HOST }}
-        username: ${{ secrets.FTP_USER }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: wp-content/
+        port: 21
+        protocol: ftp
+        local-dir: ./wp-content/
         server-dir: /var/www/chf6b5697a/www/jfit.beautiful-website.space/wp-content/
         exclude: |
+          .git*
+          node_modules/
+          *.md
           *.zip
-        extra-args: --delete
-
-    # Шаг 5: Обновление ядра WordPress (без wp-config.php)
-    - name: Update WordPress Core via FTP
-      uses: SamKirkland/FTP-Deploy-Action@4.3.0
-      with:
-        server: ${{ secrets.FTP_HOST }}
-        username: ${{ secrets.FTP_USER }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: wordpress/
-        server-dir: /var/www/chf6b5697a/www/jfit.beautiful-website.space/
-        exclude: |
-          wp-config.php
-
-    # Шаг 6: Включение режима обслуживания
-    - name: Enable maintenance mode via FTP
-      uses: SamKirkland/FTP-Deploy-Action@4.3.0
-      with:
-        server: ${{ secrets.FTP_HOST }}
-        username: ${{ secrets.FTP_USER }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: .
-        server-dir: /var/www/chf6b5697a/www/jfit.beautiful-website.space/
-        include: |
-          .maintenance
-
-    # Шаг 7: Завершение работы и удаление режима обслуживания
-    - name: Disable maintenance mode via FTP
-      uses: SamKirkland/FTP-Deploy-Action@4.3.0
-      with:
-        server: ${{ secrets.FTP_HOST }}
-        username: ${{ secrets.FTP_USER }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        server-dir: /var/www/chf6b5697a/www/jfit.beautiful-website.space/
-        delete: |
-          .maintenance
